@@ -1,0 +1,116 @@
+# The set of languages for which implicit dependencies are needed:
+set(CMAKE_DEPENDS_LANGUAGES
+  "CXX"
+  )
+# The set of files for implicit dependencies of each language:
+set(CMAKE_DEPENDS_CHECK_CXX
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/APFloatTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/APFloatTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/APIntTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/APIntTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/APSIntTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/APSIntTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/AnyTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/AnyTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/ArrayRefTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/ArrayRefTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/BitFieldsTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/BitFieldsTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/BitVectorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/BitVectorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/BitmaskEnumTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/BitmaskEnumTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/BreadthFirstIteratorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/BreadthFirstIteratorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/BumpPtrListTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/BumpPtrListTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/CoalescingBitVectorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/CoalescingBitVectorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/DAGDeltaAlgorithmTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/DAGDeltaAlgorithmTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/DeltaAlgorithmTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/DeltaAlgorithmTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/DenseMapTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/DenseMapTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/DenseSetTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/DenseSetTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/DepthFirstIteratorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/DepthFirstIteratorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/DirectedGraphTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/DirectedGraphTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/EnumeratedArrayTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/EnumeratedArrayTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/EquivalenceClassesTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/EquivalenceClassesTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/FallibleIteratorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/FallibleIteratorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/FloatingPointMode.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/FloatingPointMode.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/FoldingSet.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/FoldingSet.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/FunctionExtrasTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/FunctionExtrasTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/FunctionRefTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/FunctionRefTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/HashingTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/HashingTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IListBaseTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IListBaseTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IListIteratorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IListIteratorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IListNodeBaseTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IListNodeBaseTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IListNodeTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IListNodeTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IListSentinelTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IListSentinelTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IListTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IListTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/ImmutableListTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/ImmutableListTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/ImmutableMapTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/ImmutableMapTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/ImmutableSetTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/ImmutableSetTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IntEqClassesTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IntEqClassesTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IntervalMapTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IntervalMapTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IntrusiveRefCntPtrTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IntrusiveRefCntPtrTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/IteratorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/IteratorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/MapVectorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/MapVectorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/MappedIteratorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/MappedIteratorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/OptionalTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/OptionalTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/PackedVectorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/PackedVectorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/PointerEmbeddedIntTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/PointerEmbeddedIntTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/PointerIntPairTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/PointerIntPairTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/PointerSumTypeTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/PointerSumTypeTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/PointerUnionTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/PointerUnionTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/PostOrderIteratorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/PostOrderIteratorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/PriorityWorklistTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/PriorityWorklistTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/RangeAdapterTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/RangeAdapterTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SCCIteratorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SCCIteratorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/STLExtrasTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/STLExtrasTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/ScopeExitTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/ScopeExitTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SequenceTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SequenceTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SetVectorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SetVectorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SimpleIListTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SimpleIListTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SmallPtrSetTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SmallPtrSetTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SmallSetTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SmallSetTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SmallStringTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SmallStringTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SmallVectorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SmallVectorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SparseBitVectorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SparseBitVectorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SparseMultiSetTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SparseMultiSetTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/SparseSetTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/SparseSetTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/StatisticTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/StatisticTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/StringExtrasTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/StringExtrasTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/StringMapTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/StringMapTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/StringRefTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/StringRefTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/StringSetTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/StringSetTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/StringSwitchTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/StringSwitchTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/TinyPtrVectorTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/TinyPtrVectorTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/TripleTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/TripleTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/TwineTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/TwineTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/TypeSwitchTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/TypeSwitchTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/TypeTraitsTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/TypeTraitsTest.cpp.o"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/unittests/ADT/WaymarkingTest.cpp" "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/unittests/ADT/CMakeFiles/ADTTests.dir/WaymarkingTest.cpp.o"
+  )
+set(CMAKE_CXX_COMPILER_ID "AppleClang")
+
+# Preprocessor definitions for this target.
+set(CMAKE_TARGET_DEFINITIONS_CXX
+  "GTEST_HAS_RTTI=0"
+  "GTEST_HAS_TR1_TUPLE=0"
+  "GTEST_LANG_CXX11=1"
+  "_DEBUG"
+  "__STDC_CONSTANT_MACROS"
+  "__STDC_FORMAT_MACROS"
+  "__STDC_LIMIT_MACROS"
+  )
+
+# The include file search paths:
+set(CMAKE_CXX_TARGET_INCLUDE_PATH
+  "unittests/ADT"
+  "../unittests/ADT"
+  "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk/usr/include/libxml2"
+  "include"
+  "../include"
+  "../utils/unittest/googletest/include"
+  "../utils/unittest/googlemock/include"
+  )
+
+# Targets to which this target links.
+set(CMAKE_TARGET_LINKED_INFO_FILES
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/lib/Support/CMakeFiles/LLVMSupport.dir/DependInfo.cmake"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/utils/unittest/UnitTestMain/CMakeFiles/gtest_main.dir/DependInfo.cmake"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/utils/unittest/CMakeFiles/gtest.dir/DependInfo.cmake"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/lib/Testing/Support/CMakeFiles/LLVMTestingSupport.dir/DependInfo.cmake"
+  "/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/llvm/cmake-build-debug/lib/Demangle/CMakeFiles/LLVMDemangle.dir/DependInfo.cmake"
+  )
+
+# Fortran module output directory.
+set(CMAKE_Fortran_TARGET_MODULE_DIR "")

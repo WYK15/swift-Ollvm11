@@ -1,0 +1,3 @@
+ToolSet: 1.0 (local)Options: 
+
+Options:-DLLVM_ENABLE_PROJECTS=/Users/wangyankun/Downloads/llvm-project-swift-release-5.4/clang

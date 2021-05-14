@@ -1,0 +1,1 @@
+"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool" -static -no_warning_for_no_symbols -o ../../../libLLVMRISCVUtils.a  CMakeFiles/LLVMRISCVUtils.dir/RISCVBaseInfo.cpp.o CMakeFiles/LLVMRISCVUtils.dir/RISCVMatInt.cpp.o
