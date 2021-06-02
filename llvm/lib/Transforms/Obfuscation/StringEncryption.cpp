@@ -127,7 +127,7 @@ bool StringEncryption::runOnModule(Module &M) {
         Entry->DecStatus = DecStatus;
         ConstantStringPool.push_back(Entry);
         CSPEntryMap[&GV] = Entry;
-        collectConstantStringUser(&GV, ConstantStringUsers);
+        collectConstantStringUser(&GV, ConstantStringUsers); //广度遍历，遍历所有直接/间接引用此GV变量的 GV 并加入到 ConstantStringUsers 中
       }
     }
   }
@@ -257,15 +257,15 @@ Function *StringEncryption::buildDecryptFunction(Module *M, const StringEncrypti
   BasicBlock *Exit = BasicBlock::Create(Ctx, "Exit", DecFunc);
 
   IRB.SetInsertPoint(Enter);
-  ConstantInt *KeySize = ConstantInt::get(Type::getInt32Ty(Ctx), Entry->EncKey.size());
+  ConstantInt *KeySize = ConstantInt::get(Type::getInt32Ty(Ctx), Entry->EncKey.size()); //获取加密字符串的长度，该长度后即为加密后的字符串
   Value *EncPtr = IRB.CreateInBoundsGEP(Data, KeySize);
   Value *DecStatus = IRB.CreateLoad(Entry->DecStatus);
-  Value *IsDecrypted = IRB.CreateICmpEQ(DecStatus, IRB.getInt32(1));
-  IRB.CreateCondBr(IsDecrypted, Exit, LoopBody);
+  Value *IsDecrypted = IRB.CreateICmpEQ(DecStatus, IRB.getInt32(1));   //判断是否已经解密
+  IRB.CreateCondBr(IsDecrypted, Exit, LoopBody);  //如果已经解密，直接跳转到函数出口
 
-  IRB.SetInsertPoint(LoopBody);
+  IRB.SetInsertPoint(LoopBody); //开始循环
   PHINode *LoopCounter = IRB.CreatePHI(IRB.getInt32Ty(), 2);
-  LoopCounter->addIncoming(IRB.getInt32(0), Enter);
+  LoopCounter->addIncoming(IRB.getInt32(0), Enter); //i = 0；
 
   Value *EncCharPtr = IRB.CreateInBoundsGEP(EncPtr, LoopCounter);
   Value *EncChar = IRB.CreateLoad(EncCharPtr);
@@ -278,10 +278,10 @@ Function *StringEncryption::buildDecryptFunction(Module *M, const StringEncrypti
   Value *DecCharPtr = IRB.CreateInBoundsGEP(PlainString, LoopCounter);
   IRB.CreateStore(DecChar, DecCharPtr);
 
-  Value *NewCounter = IRB.CreateAdd(LoopCounter, IRB.getInt32(1), "", true, true);
+  Value *NewCounter = IRB.CreateAdd(LoopCounter, IRB.getInt32(1), "", true, true); //i++；
   LoopCounter->addIncoming(NewCounter, LoopBody);
 
-  Value *Cond = IRB.CreateICmpEQ(NewCounter, IRB.getInt32(static_cast<uint32_t>(Entry->Data.size())));
+  Value *Cond = IRB.CreateICmpEQ(NewCounter, IRB.getInt32(static_cast<uint32_t>(Entry->Data.size()))); //i < size
   IRB.CreateCondBr(Cond, UpdateDecStatus, LoopBody);
 
   IRB.SetInsertPoint(UpdateDecStatus);
@@ -378,22 +378,22 @@ bool StringEncryption::processConstantStringUse(Function *F) {
             auto Iter2 = CSUserMap.find(GV);
             if (Iter2 != CSUserMap.end()) { // GV is a constant string user
               CSUser *User = Iter2->second;
-              if (DecryptedGV.count(GV) > 0) {
+              if (DecryptedGV.count(GV) > 0) { //如果曾经解密过，则直接替换
                 Inst.replaceUsesOfWith(GV, User->DecGV);
-              } else {
+              } else {       //仍未解密过，则调用InitFunc函数
                 Instruction *InsertPoint = PHI->getIncomingBlock(i)->getTerminator();
                 IRBuilder<> IRB(InsertPoint);
                 IRB.CreateCall(User->InitFunc, {User->DecGV});
                 Inst.replaceUsesOfWith(GV, User->DecGV);
                 MaybeDeadGlobalVars.insert(GV);
-                DecryptedGV.insert(GV);
+                DecryptedGV.insert(GV); //将解密后的字符串保存下来
                 Changed = true;
               }
             } else if (Iter1 != CSPEntryMap.end()) { // GV is a constant string
               CSPEntry *Entry = Iter1->second;
-              if (DecryptedGV.count(GV) > 0) {
+              if (DecryptedGV.count(GV) > 0) { //如果已经解密，则直接用decGV替换
                 Inst.replaceUsesOfWith(GV, Entry->DecGV);
-              } else {
+              } else {  //仍未解密过，则创建call指令，调用DecFunc函数
                 Instruction *InsertPoint = PHI->getIncomingBlock(i)->getTerminator();
                 IRBuilder<> IRB(InsertPoint);
 

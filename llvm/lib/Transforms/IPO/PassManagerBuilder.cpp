@@ -54,7 +54,7 @@
 
 using namespace llvm;
 
-static cl::opt<bool> EnableIRStringEncryptionLeo("strsti-leo", cl::init(false), cl::Hidden,
+static cl::opt<bool> EnableIRStringEncryptionLeo("strsti-arm", cl::init(false), cl::Hidden,
                                                  cl::desc("string stitution by leo."));
 
 static cl::opt<bool>
