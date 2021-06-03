@@ -56,20 +56,23 @@ namespace {
                 Constant *initial_origin = GV.getInitializer();
                 ConstantDataSequential *cdata = dyn_cast<ConstantDataSequential>(initial_origin);
 
-              if (cdata
-                    && cdata->isCString()
-                    && GV.getSection().contains("__cstring")) {
+                errs() << GV.getSection() << " --- " << cdata->getRawDataValues() << "\n";
 
-                  const char *orig_const = cdata->getRawDataValues().data();
-                  unsigned len = cdata->getNumElements()*cdata->getElementByteSize();
+                if (cdata
+                      && cdata->isCString()
+                      && (GV.getSection().contains("__cstring") || GV.getSection().empty()) //const char *s 的section name 为 空
+                    ) {
 
-                  char *orig = const_cast<char *>(orig_const);
-                  int encrypt_key = rand() % 30 + 1;
+                    const char *orig_const = cdata->getRawDataValues().data();
+                    unsigned len = cdata->getNumElements()*cdata->getElementByteSize();
 
-                  encrypt(orig, len, encrypt_key);
+                    char *orig = const_cast<char *>(orig_const);
+                    int encrypt_key = rand() % 30 + 1;
 
-                  maps[&GV] = encrypt_key;
-                }
+                    encrypt(orig, len, encrypt_key);
+
+                    maps[&GV] = encrypt_key;
+                  }
             }
 
           //printMap(maps);
@@ -146,6 +149,10 @@ namespace {
       void addDecryptFunc(Module *mod, std::map<GlobalVariable *,int> map) {
         //printAllStringByIterFunc(*mod,map,usermaps);
 
+        std::vector<GlobalVariable*> gc_vector;
+        std::map<GlobalVariable*,GlobalVariable*> decry_status_map;
+
+
         for (Function &f : mod->functions()) {
           //LLVM的函数分为declare和definition两种。如上所示,declare指的是实现在当前翻译单元外的函数,definition反之。
           if (f.isDeclaration()) continue;
@@ -154,6 +161,7 @@ namespace {
             for (Instruction &I : block) {
               for (Value *Op : I.operands()) {
                 if (GlobalVariable *G = dyn_cast<GlobalVariable>(Op)){
+
                   //errs() << G->getName() << " 1111\n";
                   /*
                    * eg:
@@ -179,8 +187,10 @@ namespace {
                       if (CDS) {
                         if (map.find(GV) == map.end()) continue;
 
-//                        errs() << "section : " << GV->getSection() << "\n";
-//                        GV->setSection("__DATA,__const");
+                        if (decry_status_map.find(GV) != decry_status_map.end()) {
+                          GV->replaceAllUsesWith(decry_status_map.find(GV)->second);
+                          continue;
+                        }
 
                         const char *orig_const = CDS->getRawDataValues().data();
                         unsigned len = CDS->getNumElements()*CDS->getElementByteSize();
@@ -189,19 +199,6 @@ namespace {
 
                         //decrypt(orig,len,map.find(GV)->second);
                         IRBuilder<> IRB(&I);
-
-                        //SmallVector<Type *, 1> FuncArgs = {IRB.getInt8PtrTy()};
-                        //FunctionType *FuncType = FunctionType::get(FunctionType::getVoidTy(IRB.getContext()), FuncArgs, false);
-
-//                        SmallVector<Type *, 1> FuncArgs = {};
-//                        FunctionType *FuncType = FunctionType::get(IRB.getVoidTy(), FuncArgs, false);
-//                        FunctionCallee Callee = mod->getOrInsertFunction("_Z3_ptv",  FuncType);
-
-                        //Value *strVal = IRB.CreateGlobalStringPtr(orig);
-                        //SmallVector<Value *, 1> CallArgs = {strVal};
-
-                        //SmallVector<Value *, 0> CallArgs = {};
-                        //IRB.CreateCall(Callee);
 
                         ConstantInt *arg_len = llvm::ConstantInt::get(IRB.getInt32Ty(),len);
                         ConstantInt *arg_enc_key = llvm::ConstantInt::get(IRB.getInt32Ty(),map.find(GV)->second);
@@ -219,12 +216,6 @@ namespace {
 //
                         Value *strVal = IRB.CreateGlobalStringPtr(orig);
 
-//                        char *outS = new char[len];
-//                        Value *strOut = IRB.CreateGlobalStringPtr(outS);
-
-                        // new GlobalVariable(M, CDS->getType(), false, GlobalValue::PrivateLinkage,
-                        //                                                   ZeroInit, "dec" + Twine::utohexstr(Entry->ID) + GV.getName());
-
                         GlobalVariable *decStrGv =  new GlobalVariable(*mod,
                                                                       CDS->getType(),
                                                                       false,
@@ -232,12 +223,27 @@ namespace {
                                                                        ConstantAggregateZero::get(CDS->getType()),
                                                                       Twine("dec_") + Twine(orig) );
                         decStrGv->setAlignment(Align(GV->getAlignment()));
+                        decStrGv->setInitializer(GV->getInitializer());
+                        decStrGv->setSection("__DATA,__data"); //可选，__data,__data可读写
+
+                        ConstantDataSequential *str_gv_cds = dyn_cast<ConstantDataSequential>(decStrGv->getInitializer());
+
+                        const char *str_gv_data_const = str_gv_cds->getRawDataValues().data();
+                        char *str_gv_data = const_cast<char *>(orig_const);
+                        unsigned len_gv = CDS->getNumElements()*CDS->getElementByteSize();
+                        for (unsigned i = 0; i < len_gv; ++i) {
+                          str_gv_data[i] = 0;
+                        }
+
+                        //errs() << "====== section : " << GV->getSection() << " ,name : " << GV->getName() << " ,value :" << CDS->getRawDataValues() <<"\n";
 
                         Value *OutBuf = IRB.CreateBitCast(decStrGv, IRB.getInt8PtrTy());
 
                         Value *ret = IRB.CreateCall(Callee, {strVal,arg_len,arg_enc_key,OutBuf} , "decStr");
 
                         GV->replaceAllUsesWith(decStrGv);
+
+                        gc_vector.push_back(GV);
 
                         //errs() << *ret << "\n";
                       }
@@ -247,13 +253,14 @@ namespace {
               }
             } //end of instruction iter
           } //end of block iter
+        } //end of function iter
 
-//          for (std::vector<GlobalVariable*>::iterator iter = gc_vector.begin(); iter != gc_vector.end();iter++) {
-//            if ((*iter)->use_empty()){
-//              (*iter)->eraseFromParent();
-//            }
-//          }
+        for (std::vector<GlobalVariable*>::iterator iter = gc_vector.begin(); iter != gc_vector.end();iter++) {
+          if ((*iter)->use_empty()){
+            (*iter)->eraseFromParent();
+          }
         }
+
       }
 
       void printAllStringByIterFunc(Module &M,std::map<GlobalVariable *,int> map,std::set<GlobalVariable*> usermaps){
