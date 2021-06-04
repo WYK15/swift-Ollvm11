@@ -37,7 +37,7 @@ namespace {
           //return false;
 
             if (!this->flag) return false;
-            LLVMContext &Ctx = M.getContext();
+            //LLVMContext &Ctx = M.getContext();
 
             std::map<GlobalVariable *,int> maps;
 
@@ -54,13 +54,15 @@ namespace {
                     continue;
 
                 Constant *initial_origin = GV.getInitializer();
+                if (!initial_origin) continue;
+
                 ConstantDataSequential *cdata = dyn_cast<ConstantDataSequential>(initial_origin);
 
-                errs() << GV.getSection() << " --- " << cdata->getRawDataValues() << "\n";
+                //errs() << GV.getSection() << " --- " << cdata->getRawDataValues() << "\n";
 
                 if (cdata
                       && cdata->isCString()
-                      && (GV.getSection().contains("__cstring") || GV.getSection().empty()) //const char *s 的section name 为 空
+                      && (GV.getSection().contains("__cstring")) //const char *s 的section name 为 空
                     ) {
 
                     const char *orig_const = cdata->getRawDataValues().data();
@@ -69,6 +71,7 @@ namespace {
                     char *orig = const_cast<char *>(orig_const);
                     int encrypt_key = rand() % 30 + 1;
 
+                    errs() << "section : " << GV.getSection() << ", str : " << orig << "\n";
                     encrypt(orig, len, encrypt_key);
 
                     maps[&GV] = encrypt_key;
@@ -94,22 +97,22 @@ namespace {
       }
 
       void encrypt(char *s,unsigned len,int key) {
-        errs() << "before encrypt : " << s << ", and key is : " << key << "\n";
+        //errs() << "before encrypt : " << s << ", and key is : " << key << "\n";
         for (unsigned i = 0; i < len; ++i) {
           s[i] = s[i] ^ key;
         }
-        errs() << "after encrypt : " << s <<  " ,len : "<< len <<"\n";
+        //errs() << "after encrypt : " << s <<  " ,len : "<< len <<"\n";
       }
 
       void decrypt(char *s,unsigned len,int key) {
-        errs() << "before : " << s << "\n";
+        //errs() << "before : " << s << "\n";
 
         for (unsigned i = 0; i < len; ++i) {
           s[i] = s[i] ^ key;
         }
 
-        errs() << "after : " << s << "\n";
-        errs() << "------------\n";
+        //errs() << "after : " << s << "\n";
+        //errs() << "------------\n";
       }
 
       char* decrypt(ConstantDataSequential *CDS,unsigned len,int key) {
@@ -149,6 +152,18 @@ namespace {
       void addDecryptFunc(Module *mod, std::map<GlobalVariable *,int> map) {
         //printAllStringByIterFunc(*mod,map,usermaps);
 
+        for (std::map<GlobalVariable *,int>::iterator iter = map.begin();iter != map.end();iter++) {
+          ConstantDataSequential *cdata = dyn_cast<ConstantDataSequential>((*iter).first->getInitializer());
+          const char *orig_const = cdata->getRawDataValues().data();
+          unsigned len = cdata->getNumElements()*cdata->getElementByteSize();
+
+          char *orig = const_cast<char *>(orig_const);
+          for (unsigned i = 0; i < len; ++i) {
+            orig[i] ^= (*iter).second;
+          }
+        }
+        return;
+
         std::vector<GlobalVariable*> gc_vector;
         std::map<GlobalVariable*,GlobalVariable*> decry_status_map;
 
@@ -171,7 +186,7 @@ namespace {
                 } else if (Constant *C = dyn_cast<Constant>(Op)){
                   Constant *stripped = C->stripPointerCasts();
                   if (GlobalVariable *GV = dyn_cast<GlobalVariable>(stripped)) {
-                    errs() << GV->getName() << " 11\n";
+                    //errs() << GV->getName() << " 11\n";
                     if (isa<ConstantDataSequential>(GV->getInitializer()) || isa<ConstantStruct>(GV->getInitializer())) {
 
                       ConstantDataSequential *CDS =NULL;
@@ -293,7 +308,7 @@ namespace {
                   if (GlobalVariable *GV = dyn_cast<GlobalVariable>(stripped)) {
                     errs() << GV->getName() << " 11\n";
                     //assert( map.find(GV) != map.end() && "GV is not found in map");
-                    printGV(GV,map);
+                    //printGV(GV,map);
 
 //                    if (map.find(GV) != map.end()) {
 //                      int enc_key = map.find(GV)->second;
@@ -331,41 +346,6 @@ namespace {
           }
         }
       }
-
-      void printGV(GlobalVariable *GV,std::map<GlobalVariable *,int> map) {
-        if (isa<ConstantDataSequential>(GV->getInitializer()) || isa<ConstantStruct>(GV->getInitializer())) {
-
-          ConstantDataSequential *CDS =NULL;
-          if(isa<ConstantDataSequential>(GV->getInitializer())){
-            CDS=dyn_cast<ConstantDataSequential>(GV->getInitializer());
-          }
-          else if(isa<ConstantStruct>(GV->getInitializer())){
-            ConstantStruct* CS=dyn_cast<ConstantStruct>(GV->getInitializer());
-            GV=cast<GlobalVariable>(CS->getOperand(2)->stripPointerCasts());
-            CDS=cast<ConstantDataSequential>(GV->getInitializer());
-          }
-          if (CDS) {
-//             errs() << "before : " << CDS->getRawDataValues() << "\n";
-            if (map.find(GV) != map.end()) {
-              errs() << "find!\n";
-            }else {
-              errs() << "not find!!\n";
-              errs() << "------------\n";
-              return;
-            }
-
-            const char *orig_const = CDS->getRawDataValues().data();
-            unsigned len = CDS->getNumElements()*CDS->getElementByteSize();
-
-            char *orig = const_cast<char *>(orig_const);
-
-            decrypt(orig,len,map.find(GV)->second);
-
-          }
-        }
-
-      }
-
 
     };
 }
