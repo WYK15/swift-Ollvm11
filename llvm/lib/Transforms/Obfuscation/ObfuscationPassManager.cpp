@@ -33,7 +33,7 @@ static cl::opt<bool>
                      cl::desc("Enable IR Control Flow Flattening Obfuscation."));
 
 static cl::opt<bool>
-    EnableIRStringEncryption("irobf-cse", cl::init(false), cl::NotHidden,
+    EnableIRStringEncryption("irobf-cse", cl::init           (false), cl::NotHidden,
                        cl::desc("Enable IR Constant String Encryption."));
 
 static cl::opt<std::string>

@@ -70,16 +70,18 @@ bool StringStitution::runOnModule(Module &M) {
       continue;
     }
 
-    Constant *initial_origin = GV.hasInitializer() ? GV.getInitializer() : nullptr;
+    Constant *initial_origin =  GV.getInitializer();
     if (!initial_origin) continue;
 
     ConstantDataSequential *cdata = dyn_cast<ConstantDataSequential>(initial_origin);
 
     //errs() << GV.getSection() << " --- " << cdata->getRawDataValues() << "\n";
-
+    StringRef sectionName = GV.getSection();
     if (cdata
         && cdata->isCString()
-        && (GV.getSection().contains("__cstring")) //const char *s 的section name 为 空
+        && sectionName.contains("__cstring")
+        && !sectionName.equals("llvm.metadata")
+        && !sectionName.contains("__objc_methname") //const char *s 的section name 为 空
         ) {
 
       const char *orig_const = cdata->getRawDataValues().data();
@@ -112,11 +114,11 @@ std::string StringStitution::encrypt(std::string &s) {
 }
 
 void StringStitution::encrypt(char *s,unsigned len,int key){
-  errs() << "before encrypt : " << s << ", and key is : " << key << "\n";
+  //errs() << "before encrypt : " << s << ", and key is : " << key << "\n";
   for (unsigned i = 0; i < len; ++i) {
     s[i] = s[i] ^ key;
   }
-  errs() << "after encrypt : " << s <<  " ,len : "<< len <<"\n";
+  //errs() << "after encrypt : " << s <<  " ,len : "<< len <<"\n";
 }
 
 void StringStitution::decrypt(char *s,unsigned len,int key){
@@ -178,17 +180,20 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
   std::vector<GlobalVariable*> gc_vector;
   std::map<GlobalVariable*,GlobalVariable*> decry_status_map;
 
-
   for (Function &f : mod->functions()) {
     //LLVM的函数分为declare和definition两种。如上所示,declare指的是实现在当前翻译单元外的函数,definition反之。
     if (f.isDeclaration()) continue;
 
     for (BasicBlock &block : f) {
       for (Instruction &I : block) {
-        for (Value *Op : I.operands()) {
-          if (GlobalVariable *G = dyn_cast<GlobalVariable>(Op)){
+        //There must be no non-phi instructions between the start of a basic block and the PHI instructions: i.e. PHI instructions must be first in a basic block.
+        //if (isa<PHINode>(&I)) continue;
 
-            //errs() << G->getName() << " 1111\n";
+        for (Value *Op : I.operands()) {
+          if (GlobalVariable *GV = dyn_cast<GlobalVariable>(Op)){
+            //errs() << GV->getSection() << " %%%%%%\n";
+           // if (!GV->hasInitializer()) continue;
+
             /*
              * eg:
              * OBJC_CLASSLIST_REFERENCES_$_ 1111
@@ -198,17 +203,31 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
             Constant *stripped = C->stripPointerCasts();
             if (GlobalVariable *GV = dyn_cast<GlobalVariable>(stripped)) {
               //errs() << GV->getName() << " 11\n";
-              if (GV->hasInitializer() && (isa<ConstantDataSequential>(GV->getInitializer()) || isa<ConstantStruct>(GV->getInitializer()) )) {
+              if (!GV->hasInitializer()) continue;
+              if ( isa<ConstantDataSequential>(GV->getInitializer()) || isa<ConstantStruct>(GV->getInitializer()) ) {
 
-                ConstantDataSequential *CDS =NULL;
+                ConstantDataSequential *CDS = NULL;
 
                 if(isa<ConstantDataSequential>(GV->getInitializer())){
                   CDS=dyn_cast<ConstantDataSequential>(GV->getInitializer());
                 }
                 else if(isa<ConstantStruct>(GV->getInitializer())){
                   ConstantStruct* CS=dyn_cast<ConstantStruct>(GV->getInitializer());
-                  GV=cast<GlobalVariable>(CS->getOperand(2)->stripPointerCasts());
-                  CDS=cast<ConstantDataSequential>(GV->getInitializer());
+
+                  if(CS->getType()!=f.getParent()->getTypeByName("struct.__NSConstantString_tag")){
+                    continue;
+                  }
+
+                  GV = cast<GlobalVariable>(CS->getOperand(2)->stripPointerCasts());
+
+                  if (map.find(GV) == map.end()) continue;
+
+                  if (GV->hasInitializer()) {
+                    Constant *initial = GV->getInitializer();
+                    //errs() << initial << "\n";
+                    CDS = cast<ConstantDataSequential>(GV->getInitializer()); //偶现crash
+                  }
+
                 }
                 if (CDS) {
                   if (map.find(GV) == map.end()) continue;
@@ -270,36 +289,6 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
 //
                   Value *strVal = IRB.CreateGlobalStringPtr(orig);
 
-                  GlobalVariable *decStrGv =  new GlobalVariable(*mod,
-                                                                CDS->getType(),
-                                                                false,
-                                                                GlobalValue::PrivateLinkage,
-                                                                 ConstantAggregateZero::get(CDS->getType()),
-                                                                Twine("dec_") + Twine(orig) );
-                  decStrGv->setAlignment(Align(GV->getAlignment()));
-                  decStrGv->setInitializer(GV->getInitializer());
-                  decStrGv->setSection("__DATA,__data"); //可选，__data,__data可读写
-
-                  ConstantDataSequential *str_gv_cds = dyn_cast<ConstantDataSequential>(decStrGv->getInitializer());
-
-                  const char *str_gv_data_const = str_gv_cds->getRawDataValues().data();
-                  char *str_gv_data = const_cast<char *>(orig_const);
-                  unsigned len_gv = CDS->getNumElements()*CDS->getElementByteSize();
-                  for (unsigned i = 0; i < len_gv; ++i) {
-                    str_gv_data[i] = 0;
-                  }
-
-                  //errs() << "====== section : " << GV->getSection() << " ,name : " << GV->getName() << " ,value :" << CDS->getRawDataValues() <<"\n";
-
-                  Value *OutBuf = IRB.CreateBitCast(decStrGv, IRB.getInt8PtrTy());
-
-                  Value *ret = IRB.CreateCall(Callee, {strVal,arg_len,arg_enc_key,OutBuf} , "decStr");
-
-                  GV->replaceAllUsesWith(decStrGv);
-
-                  gc_vector.push_back(GV);
-
-                  //errs() << *ret << "\n";*/
                 }
               }
             }
@@ -314,7 +303,6 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
       (*iter)->eraseFromParent();
     }
   }
-
 }
 
 void StringStitution::decryptAllGV(std::map<GlobalVariable *,int> map){
@@ -342,21 +330,21 @@ void StringStitution::decryptAllGV(std::map<GlobalVariable *,int> map){
 Function * StringStitution::buildEncryptFunction(Module *M){
   LLVMContext &Ctx = M->getContext();
   IRBuilder<> IRB(Ctx);
-  FunctionType *FuncTy = FunctionType::get(FunctionType::getVoidTy(Ctx),
+  FunctionType *FuncTy = FunctionType::get(Type::getVoidTy(Ctx),
                                            {
-                                               IntegerType::getInt8PtrTy(Ctx),
-                                               IntegerType::getInt32Ty(Ctx),
-                                               IntegerType::getInt32Ty(Ctx),
-                                               IntegerType::getInt8PtrTy(Ctx),
+                                               IRB.getInt8PtrTy(),
+                                               IRB.getInt32Ty(),
+                                               IRB.getInt32Ty(),
+                                               IRB.getInt8PtrTy(),
                                            },
                                            false);
 
   //create Function Method 1
-  Function *DecFunc = Function::Create(FuncTy,GlobalVariable::PrivateLinkage,"storeToSp",M);
+  //Function *DecFunc = Function::Create(FuncTy,GlobalVariable::PrivateLinkage,"storeToSp",M);
 
   //create Function Method 2getInitializer
-  //FunctionCallee DecFuncCallee = M->getOrInsertFunction("storeToSP",FuncTy);
-  //Function* DecFunc = cast<Function>(DecFuncCallee.getCallee());
+  FunctionCallee DecFuncCallee = M->getOrInsertFunction("storeToSP",FuncTy);
+  Function* DecFunc = cast<Function>(DecFuncCallee.getCallee());
 
   auto ArgIt = DecFunc->arg_begin();
   Argument *origString = ArgIt;
@@ -449,10 +437,12 @@ Function * StringStitution::buildEncryptFunction(Module *M){
 
 //  Value *outCharPtr = IRB.CreateInBoundsGEP(IRB.CreateLoad(constantOutAlloc),IRB.CreateLoad(indexAlloc));
   //Value *outCharPtr = IRB.CreateGEP(IRB.CreateLoad(constantOutAlloc),IRB.CreateLoad(indexAlloc));
+  //StoreInst *storeToOrig = IRB.CreateStore(decChar,encKeyCharPtr);
+  //storeToOrig->setAlignment(Align(1));
+
   Value *outCharPtr = IRB.CreateInBoundsGEP(IRB.CreateLoad(constantOutAlloc),IRB.CreateLoad(indexAlloc));
   StoreInst *Store = IRB.CreateStore(decChar,outCharPtr);
   Store->setAlignment(Align(1));
-  //Store->setAlignment(Align(1));
 
   IRB.CreateBr(ForInc); // body block -> Inc block
 
@@ -469,104 +459,3 @@ Function * StringStitution::buildEncryptFunction(Module *M){
 
   return DecFunc;
 }
-
-void StringStitution::printAllStringByIterFunc(Module &M,std::map<GlobalVariable *,int> map,std::set<GlobalVariable*> usermaps){
-  for (Function &f : M.functions()) {
-    if (f.isDeclaration()) continue;
-    for (BasicBlock &block : f) {
-//            for (Instruction &I : block) {
-//              if (PHINode *PHI = dyn_cast<PHINode>(&I)){
-//                for (unsigned i = 0; i < PHI->getNumIncomingValues(); ++i) {
-//                  if (GlobalVariable *GV = dyn_cast<GlobalVariable>(PHI->getIncomingValue(i))){
-//                    printGV(GV);
-//                  }
-//                }
-//              } else {
-//                for (User::op_iterator op = I.op_begin(); op != I.op_end(); ++op) {
-//                  if (GlobalVariable *GV = dyn_cast<GlobalVariable>(*op)) {
-//                      auto Iter = usermaps.find(GV);
-//                      errs() << f.getName() << " !!!!\n";
-//                  }
-//                }
-//              }
-//            }
-      for (Instruction &I : block) {
-        for (Value *Op : I.operands()) {
-          if (GlobalVariable *G = dyn_cast<GlobalVariable>(Op)) {
-            errs() << G->getName() << " 111\n";
-            //printGV(G);
-          } else if ( Constant *C = dyn_cast<Constant>(Op) ){
-            Constant *stripped = C->stripPointerCasts();
-            if (GlobalVariable *GV = dyn_cast<GlobalVariable>(stripped)) {
-              errs() << GV->getName() << " 11\n";
-              //assert( map.find(GV) != map.end() && "GV is not found in map");
-              //printGV(GV,map);
-
-//                    if (map.find(GV) != map.end()) {
-//                      int enc_key = map.find(GV)->second;
-//                      errs() << "after : " << decrypt(GV,enc_key) << "\n";
-//                    }
-            }
-          }
-        }
-
-//                if (GlobalVariable *G = dyn_cast<GlobalVariable>(Op)) {
-//                  errs() << G->getName() << " 111\n";
-//                  //printGV(G);
-//                } else if ( Constant *C = dyn_cast<Constant>(Op) ){
-//                  Constant *stripped = C->stripPointerCasts();
-//                  if (GlobalVariable *GV = dyn_cast<GlobalVariable>(stripped)) {
-//                    errs() << GV->getName() << " 11\n";
-//                    //printGV(GV);
-//                  }
-//                }
-//              }
-        /*
-        _unnamed_cfstring_ 11
-        _unnamed_cfstring_.2 11
-        _unnamed_cfstring_.5 11
-        .str.6 11
-        _unnamed_cfstring_.8 11
-        _unnamed_cfstring_.10 11
-        _unnamed_cfstring_.14 11
-        _unnamed_cfstring_.16 11
-        OBJC_CLASSLIST_REFERENCES_$_ 111
-        OBJC_SELECTOR_REFERENCES_ 111
-        _unnamed_cfstring_.12 11
-         */
-      }
-    }
-  }
-}
-
-
-/*
- *
- *
-section : __TEXT,__cstring,cstring_literals
-this is hello func  is c string
-section : __TEXT,__cstring,cstring_literals
-this is hello func1  is c string
-section : __TEXT,__objc_classname,cstring_literals
-ShumeiNetworkUtils  is c string
-section : __TEXT,__objc_methname,cstring_literals
-printHello  is c string
-section : __TEXT,__objc_methtype,cstring_literals
-v16@0:8  is c string
-section : __TEXT,__objc_methname,cstring_literals
-printHello1  is c string
-section : __TEXT,__cstring,cstring_literals
-Hello, OC!  is c string
-section :
-llll  is c string
-section : __TEXT,__cstring,cstring_literals
-s is : %s  is c string
-section : __TEXT,__cstring,cstring_literals
-htmls : %@  is c string
-section : __TEXT,__cstring,cstring_literals
-fp-it.fengkongcloud.com/deviceprofile/v4  is c string
-section : __TEXT,__cstring,cstring_literals
-fp-it.fengkongcloud.com/v3/cloudconf  is c string
-section : __TEXT,__objc_methname,cstring_literals
-arrayWithObjects:count:  is c string
- */
