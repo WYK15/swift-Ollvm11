@@ -275,20 +275,6 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
 
                   GV->replaceAllUsesWith(decStrGv);
 
-//
-                  /*FunctionType *FuncType = FunctionType::get(IRB.getInt8PtrTy(),
-                                                             {
-                                                                 Type::getInt8PtrTy(IRB.getContext()),
-                                                                 IRB.getInt32Ty(),
-                                                                 IRB.getInt32Ty(),
-                                                                 Type::getInt8PtrTy(IRB.getContext())
-                                                             },
-                                                             false);
-//
-                  FunctionCallee Callee = mod->getOrInsertFunction("_Z9__decryptPciiS_", FuncType);
-//
-                  Value *strVal = IRB.CreateGlobalStringPtr(orig);
-
                 }
               }
             }
@@ -305,28 +291,9 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
   }
 }
 
-void StringStitution::decryptAllGV(std::map<GlobalVariable *,int> map){
-  for (std::map<GlobalVariable *,int>::iterator iter = map.begin();iter != map.end();iter++) {
-    ConstantDataSequential *cdata = dyn_cast<ConstantDataSequential>((*iter).first->getInitializer());
-    const char *orig_const = cdata->getRawDataValues().data();
-    unsigned len = cdata->getNumElements()*cdata->getElementByteSize();
 
-    char *orig = const_cast<char *>(orig_const);
-    for (unsigned i = 0; i < len; ++i) {
-      orig[i] ^= (*iter).second;
-    }
-  }
-  return;
-}
 
-/*
-  void __decrypt(char *encStr,int len, int key,char *outS) {
-    for (unsigned int i = 0; i < len; ++i) {
-        outS[i] = encStr[i] ^ key;
-    }
-    return ;
-  }
-*/
+
 Function * StringStitution::buildEncryptFunction(Module *M){
   LLVMContext &Ctx = M->getContext();
   IRBuilder<> IRB(Ctx);
