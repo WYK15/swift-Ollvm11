@@ -40,6 +40,7 @@ namespace {
       void decryptAllGV(std::map<GlobalVariable *,int> map);
       void printAllStringByIterFunc(Module &M,std::map<GlobalVariable *,int> map,std::set<GlobalVariable*> usermaps);
       Function *buildEncryptFunction(Module *M);
+      std::vector<StringRef> getAllMethodName(Module *M);
     };
 }
 
@@ -61,6 +62,8 @@ bool StringStitution::runOnModule(Module &M) {
 
   std::map<GlobalVariable *,int> maps;
 
+  std::vector<StringRef> methods = getAllMethodName(&M);
+
   for (GlobalVariable &GV : M.globals()) {
     if (!GV.isConstant() || !GV.hasInitializer()) {
       continue;
@@ -79,10 +82,17 @@ bool StringStitution::runOnModule(Module &M) {
     StringRef sectionName = GV.getSection();
     if (cdata
         && cdata->isCString()
+        && GV.isConstant()
         && sectionName.contains("__cstring")
         && !sectionName.equals("llvm.metadata")
         && !sectionName.contains("__objc_methname") //const char *s 的section name 为 空
         ) {
+
+      //变量名称，在方法名中找到，跳过，不加密了
+      if (std::find(methods.begin(),methods.end(),cdata->getRawDataValues()) != methods.end()) {
+        errs() << cdata->getRawDataValues() << " will not be String encrypted!\n";
+        continue;
+      }
 
       const char *orig_const = cdata->getRawDataValues().data();
       unsigned len = cdata->getNumElements()*cdata->getElementByteSize();
@@ -91,8 +101,9 @@ bool StringStitution::runOnModule(Module &M) {
       char *orig = const_cast<char *>(orig_const);
       int encrypt_key = rand() % 30 + 1;
 
-      //errs() << "section : " << GV.getSection() << ", str : " << orig << "\n";
+      //errs() << "section : " << GV.getSection() << ", str : " << orig;
       encrypt(orig, len, encrypt_key);
+      //errs() << " ,after : " << orig << " \n";
 
       maps[&GV] = encrypt_key;
     }
@@ -192,7 +203,12 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
         for (Value *Op : I.operands()) {
           if (GlobalVariable *GV = dyn_cast<GlobalVariable>(Op)){
             //errs() << GV->getSection() << " %%%%%%\n";
-           // if (!GV->hasInitializer()) continue;
+            if (!GV->hasInitializer()) continue;
+            Constant *constant = GV->getInitializer();
+            if (isa<ConstantDataSequential>(constant)) {
+              ConstantDataSequential *cds = dyn_cast<ConstantDataSequential>(constant);
+              errs() << "gv1 cds : " << cds->getRawDataValues() << "$$$$$\n";
+            }
 
             /*
              * eg:
@@ -243,7 +259,9 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
                   char *orig = const_cast<char *>(orig_const);
 
                   //decrypt(orig,len,map.find(GV)->second);
-                  IRBuilder<> IRB(&I);
+//                  IRBuilder<> IRB(&I);
+                  //修改解密函数的插入位置
+                  IRBuilder<> IRB(f.getEntryBlock().getFirstNonPHI());
 
                   Value *strVal = IRB.CreateGlobalStringPtr(orig);
                   ConstantInt *arg_len = llvm::ConstantInt::get(IRB.getInt32Ty(),len);
@@ -425,4 +443,24 @@ Function * StringStitution::buildEncryptFunction(Module *M){
   IRB.CreateRetVoid();
 
   return DecFunc;
+}
+
+std::vector<StringRef> StringStitution::getAllMethodName(Module *M){
+  std::vector<StringRef> methodNames;
+  for (Module::global_iterator gi = M->global_begin(), ge = M->global_end(); gi != ge; gi++) {
+    GlobalVariable* gv = &(*gi);
+    if (gv->hasInitializer() &&
+        (gv->getSection().contains("__objc_methname") || gv->getSection().contains("__objc_selrefs"))
+        ){
+      Constant *initializer = gv->getInitializer();
+      if (initializer) {
+        ConstantDataSequential *cdata =
+            dyn_cast<ConstantDataSequential>(initializer);
+        if (cdata) {
+          methodNames.push_back(cdata->getRawDataValues());
+        }
+      }
+    }
+  }
+  return methodNames;
 }
