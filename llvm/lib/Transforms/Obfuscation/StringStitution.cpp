@@ -5,6 +5,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Obfuscation/IPObfuscationContext.h"
 #include "llvm/Transforms/Obfuscation/Utils.h"
+#include "llvm/Transforms/Utils/ModuleUtils.h"
 #include <algorithm>
 #include <iostream>
 #include <llvm/ADT/SetOperations.h>
@@ -41,6 +42,8 @@ namespace {
       void printAllStringByIterFunc(Module &M,std::map<GlobalVariable *,int> map,std::set<GlobalVariable*> usermaps);
       Function *buildEncryptFunction(Module *M);
       std::vector<StringRef> getAllMethodName(Module *M);
+      void decryptRestGV(Module *M,std::map<GlobalVariable*,int> map,Function *function);
+      void addDecodeFunction4(Module *mod, std::map<GlobalVariable*,int> map);
     };
 }
 
@@ -80,6 +83,7 @@ bool StringStitution::runOnModule(Module &M) {
 
     //errs() << GV.getSection() << " --- " << cdata->getRawDataValues() << "\n";
     StringRef sectionName = GV.getSection();
+    //GV.isExternallyInitialized()
     if (cdata
         && cdata->isCString()
         && GV.isConstant()
@@ -101,7 +105,7 @@ bool StringStitution::runOnModule(Module &M) {
       char *orig = const_cast<char *>(orig_const);
       int encrypt_key = rand() % 30 + 1;
 
-      //errs() << "section : " << GV.getSection() << ", str : " << orig;
+      errs() << "section : " << GV.getSection() << " ,name : " << GV.getName() << ", str : " << orig << "\n";
       encrypt(orig, len, encrypt_key);
       //errs() << " ,after : " << orig << " \n";
 
@@ -202,13 +206,16 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
 
         for (Value *Op : I.operands()) {
           if (GlobalVariable *GV = dyn_cast<GlobalVariable>(Op)){
-            //errs() << GV->getSection() << " %%%%%%\n";
-            if (!GV->hasInitializer()) continue;
-            Constant *constant = GV->getInitializer();
-            if (isa<ConstantDataSequential>(constant)) {
-              ConstantDataSequential *cds = dyn_cast<ConstantDataSequential>(constant);
-              errs() << "gv1 cds : " << cds->getRawDataValues() << "$$$$$\n";
+            //errs() << "I: " << I << " ,section : " << GV->getSection() << " %%%%%%\n";
+            if (GV->isExternallyInitialized()) {
+              errs() << "I: " << I << " ,section : " << GV->getSection() <<   " %%%%%%\n";
             }
+//            if (!GV->hasInitializer()) continue;
+//            Constant *constant = GV->getInitializer();
+//            if (isa<ConstantDataSequential>(constant)) {
+//              ConstantDataSequential *cds = dyn_cast<ConstantDataSequential>(constant);
+//              errs() << "gv1 cds : " << cds->getRawDataValues() << "$$$$$\n";
+//            }
 
             /*
              * eg:
@@ -291,6 +298,8 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
 
                   IRB.CreateCall(decFunc,{strVal,arg_len,arg_enc_key,OutBuf});
 
+                  decry_status_map[GV] = decStrGv;
+
                   GV->replaceAllUsesWith(decStrGv);
 
                 }
@@ -307,9 +316,188 @@ void StringStitution::addDecryptFunc(Module *mod, std::map<GlobalVariable *,int>
       (*iter)->eraseFromParent();
     }
   }
+
+  std::map<GlobalVariable*,int> notDecrypted;
+  for (std::map<GlobalVariable *,int>::iterator iter = map.begin();iter != map.end(); iter++) {
+    GlobalVariable *gv_tmp = iter->first;
+    if (decry_status_map.find(gv_tmp) == decry_status_map.end()) {
+     notDecrypted.insert(*iter);
+    }
+  }
+
+  //decryptRestGV(mod,notDecrypted,decFunc);
+  //addDecodeFunction4(mod,notDecrypted);
+
 }
 
+void StringStitution::addDecodeFunction4(Module *mod, std::map<GlobalVariable*,int> map) {
+  // Declare and add the function definition
+  //errs()<<"Successful enter decode function"<<"\n";
+  std::vector<Type*>FuncTy_args;
+  FunctionType* FuncTy = FunctionType::get(
+      /*Result=*/Type::getVoidTy(mod->getContext()),  // returning void
+      /*Params=*/FuncTy_args,  // taking no args
+      /*isVarArg=*/false);
+  uint64_t StringObfDecodeRandomName = 64;
+  std::string  random_str;
+  StringObfDecodeRandomName++;
+  FunctionCallee c = mod->getOrInsertFunction(".writeTosp23", FuncTy);
+  Function* fdecode = cast<Function>(c.getCallee());
+  fdecode->setCallingConv(CallingConv::C);
 
+
+  BasicBlock* entry = BasicBlock::Create(mod->getContext(), "entry", fdecode);
+
+  IRBuilder<> builder(mod->getContext());
+  builder.SetInsertPoint(entry);
+
+
+  for (std::map<GlobalVariable*,int>::iterator iter = map.begin();iter != map.end();iter++) {
+    GlobalVariable *gvar = (*iter).first;
+
+    uint8_t key = (*iter).second;
+
+    Constant *init = gvar->getInitializer();
+    ConstantDataSequential *cdata = dyn_cast<ConstantDataSequential>(init);
+    errs() << cdata->getRawDataValues() << " has decrypted\n";
+
+    unsigned len = cdata->getNumElements()*cdata->getElementByteSize();
+    --len;
+
+    BasicBlock *preHeaderBB=builder.GetInsertBlock();
+    BasicBlock* for_body = BasicBlock::Create(mod->getContext(), "for-body", fdecode);
+    BasicBlock* for_end = BasicBlock::Create(mod->getContext(), "for-end", fdecode);
+    builder.CreateBr(for_body);
+    builder.SetInsertPoint(for_body);
+    PHINode *variable = builder.CreatePHI(Type::getInt32Ty(mod->getContext()), 2, "i");
+    Value *startValue = builder.getInt32(0);
+    Value *endValue = builder.getInt32(len);
+    variable->addIncoming(startValue, preHeaderBB);
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //LoadInst *Load=builder.CreateLoad(gvar);
+    //errs()<<"Load: "<<*(Load->getPointerOperand())<<"\n";
+    const char *orig_const = cdata->getRawDataValues().data();
+
+    char *orig = const_cast<char *>(orig_const);
+
+    //decrypt(orig,len,map.find(GV)->second);
+
+//    Value *strValPtr = builder.CreateGlobalStringPtr(orig);
+//    Value *charPtr = builder.CreateGEP(strValPtr,variable);
+//    LoadInst *charVal = builder.CreateLoad(charPtr, false);
+//    charVal->setAlignment(Align(1));
+//
+//    Value *const_key=builder.getInt8(key);
+//    Value *decChar = builder.CreateXor(charVal,builder.CreateTrunc(const_key,builder.getInt8Ty()),"xorRes");
+//    StoreInst *store = builder.CreateStore(decChar,charPtr);
+//    store->setAlignment(Align(1));
+
+
+    Value* indexList[2] = {ConstantInt::get(variable->getType(), 0), variable};
+    Value *const_key=builder.getInt8(key);
+    Value *GEP=builder.CreateGEP(gvar,ArrayRef<Value*>(indexList, 2),"arrayIdx");
+    LoadInst *loadElement=builder.CreateLoad(GEP,false);
+    loadElement->setAlignment(Align(1));
+    //errs()<<"Type: "<<*loadElement<<"\n";
+    //CastInst* extended = new ZExtInst(const_key, loadElement->getType(), "extended", for_body);
+    //Value* extended = builder.CreateZExtOrBitCast(const_key, loadElement->getType(),"extended");
+    Value *Xor = builder.CreateXor(loadElement,const_key,"xor");
+    StoreInst *Store = builder.CreateStore(Xor, GEP,false);
+    Store->setAlignment(Align(1));
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    Value *stepValue = builder.getInt32(1);
+    Value *nextValue = builder.CreateAdd(variable, stepValue, "next-value");
+    Value *endCondition = builder.CreateICmpULT(variable, endValue, "end-condition");
+    endCondition = builder.CreateICmpNE(endCondition, builder.getInt1(0), "loop-condition");
+    BasicBlock *loopEndBB = builder.GetInsertBlock();
+    builder.CreateCondBr(endCondition, loopEndBB, for_end);
+    builder.SetInsertPoint(for_end);
+    variable->addIncoming(nextValue, loopEndBB);
+
+  }
+  builder.CreateRetVoid();
+  appendToGlobalCtors(*mod,fdecode,0);
+
+
+}
+
+void StringStitution::decryptRestGV(Module *M,std::map<GlobalVariable*,int> map,Function *function){
+
+//  for (std::map<GlobalVariable*,int>::iterator iter = map.begin();iter != map.end();iter++) {
+//    //errs() << (*iter).first << " &&&&&&&\n";
+//    GlobalVariable *gv = (*iter).first;
+//    ConstantDataSequential *cds = dyn_cast<ConstantDataSequential>(gv->getInitializer());
+//    errs() << cds->getRawDataValues() << " &&&&&\n";
+//  }
+
+  std::vector<Type*>FuncTy_args;
+  FunctionType* FuncTy = FunctionType::get(
+      /*Result=*/Type::getVoidTy(M->getContext()),  // returning void
+      /*Params=*/FuncTy_args,  // taking no args
+      /*isVarArg=*/false);
+  FunctionCallee c = M->getOrInsertFunction(".writeTosp2", FuncTy);
+  Function* fdecode = cast<Function>(c.getCallee());
+  fdecode->setCallingConv(CallingConv::C);
+
+  LLVMContext &Ctx = M->getContext();
+  IRBuilder<> IRB(Ctx);
+
+  BasicBlock* entry = BasicBlock::Create(Ctx, "entry", fdecode);
+
+  IRB.SetInsertPoint(entry);
+
+  for (std::map<GlobalVariable*,int>::iterator iter = map.begin();iter != map.end();iter++) {
+    GlobalVariable *GV = (*iter).first;
+    ConstantDataSequential *CDS = dyn_cast<ConstantDataSequential>(GV->getInitializer());
+
+    const char *orig_const = CDS->getRawDataValues().data();
+    unsigned len = CDS->getNumElements()*CDS->getElementByteSize();
+    ConstantInt *arg_len = llvm::ConstantInt::get(IRB.getInt32Ty(),len);
+
+    errs() << "CDS : " << orig_const << " &&&&&\n";
+
+    char *orig = const_cast<char *>(orig_const);
+    Value *strVal = IRB.CreateGlobalStringPtr(orig);
+
+    Constant *arg_enc_key = llvm::ConstantInt::get(IRB.getInt32Ty(),(*iter).second);
+
+    GlobalVariable *decStrGv =  new GlobalVariable(*M,
+                                                   CDS->getType(),
+                                                   false,
+                                                   GlobalValue::PrivateLinkage,
+                                                   ConstantAggregateZero::get(CDS->getType()),
+                                                   Twine("dec_") + Twine(orig) );
+    //decStrGv->setVisibility(GlobalValue::HiddenVisibility);
+    decStrGv->setAlignment(Align(GV->getAlignment()));
+    decStrGv->setInitializer(GV->getInitializer());
+    //decStrGv->setSection("__DATA,__data"); //可选，__data,__data可读写
+    ConstantDataSequential *str_gv_cds = dyn_cast<ConstantDataSequential>(decStrGv->getInitializer());
+    const char *str_gv_data_const = str_gv_cds->getRawDataValues().data();
+    char *str_gv_data = const_cast<char *>(orig_const);
+    unsigned len_gv = CDS->getNumElements()*CDS->getElementByteSize();
+    for (unsigned i = 0; i < len_gv; ++i) {
+      str_gv_data[i] = 64;
+    }
+
+    Value *OutBuf = IRB.CreateBitCast(decStrGv, IRB.getInt8PtrTy());
+
+//    Constant *xor1 = llvm::ConstantInt::get(IRB.getInt32Ty(),1);
+//    Constant *xor2 = llvm::ConstantInt::get(IRB.getInt32Ty(),2);
+
+
+    IRB.CreateCall(function,{strVal,arg_len,arg_enc_key,OutBuf});
+
+    GV->replaceAllUsesWith(decStrGv);
+  }
+
+  IRB.CreateRetVoid();
+
+  llvm::appendToGlobalCtors(*M,fdecode,0);
+
+}
 
 
 Function * StringStitution::buildEncryptFunction(Module *M){
